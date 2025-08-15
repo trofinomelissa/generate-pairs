@@ -237,6 +237,15 @@ function renderWeeks(weeksData, container) {
         return;
     }
 
+    // Create results header with action buttons
+    const resultsHeader = createResultsHeader(weeksData);
+    container.appendChild(resultsHeader);
+
+    // Create container for the results content
+    const resultsContainer = document.createElement('div');
+    resultsContainer.id = 'results-content';
+    resultsContainer.className = 'results-content';
+
     // Render each week
     weeksData.forEach(week => {
         const weekDiv = document.createElement('div');
@@ -268,11 +277,255 @@ function renderWeeks(weeksData, container) {
         });
 
         weekDiv.appendChild(pairsList);
-        container.appendChild(weekDiv);
+        resultsContainer.appendChild(weekDiv);
 
         // Initialize the tooltip for the new button
         M.Tooltip.init(copyButton);
     });
+
+    container.appendChild(resultsContainer);
+}
+
+/**
+ * Creates the results header with action buttons.
+ * @param {Array<object>} weeksData - The data for all weeks.
+ * @returns {HTMLElement} The header element with action buttons.
+ */
+function createResultsHeader(weeksData) {
+    const header = document.createElement('div');
+    header.className = 'results-header';
+
+    const title = document.createElement('h4');
+    title.textContent = `Duplas Geradas (${weeksData.length} semanas)`;
+    title.style.margin = '0';
+    title.style.color = 'var(--primary)';
+
+    const actionsContainer = document.createElement('div');
+    actionsContainer.className = 'results-actions';
+
+    // Copy all button
+    const copyAllButton = document.createElement('button');
+    copyAllButton.className = 'btn-flat waves-effect tooltipped';
+    copyAllButton.setAttribute('data-position', 'top');
+    copyAllButton.setAttribute('data-tooltip', 'Copiar todas as rodadas');
+    copyAllButton.innerHTML = '<i class="material-icons left">content_copy</i>Copiar Tudo';
+    copyAllButton.onclick = () => copyAllWeeksToClipboard(weeksData);
+
+    // Regenerate button
+    const regenerateButton = document.createElement('button');
+    regenerateButton.className = 'btn-flat waves-effect tooltipped';
+    regenerateButton.setAttribute('data-position', 'top');
+    regenerateButton.setAttribute('data-tooltip', 'Gerar novas duplas');
+    regenerateButton.innerHTML = '<i class="material-icons left">refresh</i>Gerar Novamente';
+    regenerateButton.onclick = () => loadPairs();
+
+    // Export to PDF button
+    const exportPdfButton = document.createElement('button');
+    exportPdfButton.className = 'btn waves-effect waves-light tooltipped';
+    exportPdfButton.setAttribute('data-position', 'top');
+    exportPdfButton.setAttribute('data-tooltip', 'Exportar para PDF');
+    exportPdfButton.innerHTML = '<i class="material-icons left">picture_as_pdf</i>Exportar PDF';
+    exportPdfButton.onclick = () => exportToPdf(weeksData);
+
+    // Clear results button
+    const clearButton = document.createElement('button');
+    clearButton.className = 'btn-flat waves-effect tooltipped red-text';
+    clearButton.setAttribute('data-position', 'top');
+    clearButton.setAttribute('data-tooltip', 'Limpar resultados');
+    clearButton.innerHTML = '<i class="material-icons left">clear</i>Limpar';
+    clearButton.onclick = () => clearResults();
+
+    actionsContainer.appendChild(copyAllButton);
+    actionsContainer.appendChild(regenerateButton);
+    actionsContainer.appendChild(exportPdfButton);
+    actionsContainer.appendChild(clearButton);
+
+    header.appendChild(title);
+    header.appendChild(actionsContainer);
+
+    // Initialize tooltips
+    setTimeout(() => {
+        M.Tooltip.init(header.querySelectorAll('.tooltipped'));
+    }, 100);
+
+    return header;
+}
+
+/**
+ * Copies all weeks' pairs to the clipboard in WhatsApp-friendly Markdown format.
+ * @param {Array<object>} weeksData - The data of all weeks to be copied.
+ */
+function copyAllWeeksToClipboard(weeksData) {
+    let textToCopy = '*📅 CRONOGRAMA DE DUPLAS*\n\n';
+
+    weeksData.forEach((week, index) => {
+        textToCopy += `*Semana ${index + 1}: ${week.label}*\n`;
+        week.pairs.forEach(([p1, p2]) => {
+            textToCopy += `🔹 ${p1} e ${p2}\n`;
+        });
+        textToCopy += '\n';
+    });
+
+    navigator.clipboard.writeText(textToCopy.trim()).then(() => {
+        M.toast({ html: 'Todas as rodadas copiadas!' });
+    }, () => {
+        M.toast({ html: 'Erro ao copiar as rodadas.' });
+    });
+}
+
+/**
+ * Exports the results to PDF by opening the print dialog with only the results visible.
+ * @param {Array<object>} weeksData - The data of all weeks to be exported.
+ */
+function exportToPdf(weeksData) {
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    
+    // Generate HTML content for printing
+    const printContent = generatePrintableContent(weeksData);
+    
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    
+    // Wait for content to load, then print
+    printWindow.onload = function() {
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+    };
+    
+    M.toast({ html: 'Abrindo diálogo de impressão...' });
+}
+
+/**
+ * Generates printable HTML content for the weeks data.
+ * @param {Array<object>} weeksData - The data of all weeks.
+ * @returns {string} HTML string ready for printing.
+ */
+function generatePrintableContent(weeksData) {
+    const currentDate = new Date().toLocaleDateString('pt-BR');
+    
+    let html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Cronograma de Duplas</title>
+        <style>
+            @media print {
+                @page { margin: 2cm; size: A4; }
+            }
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.4;
+                color: #333;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            .header {
+                text-align: center;
+                border-bottom: 2px solid #1976d2;
+                padding-bottom: 20px;
+                margin-bottom: 30px;
+            }
+            .header h1 {
+                color: #1976d2;
+                margin: 0 0 10px 0;
+                font-size: 28px;
+            }
+            .header .subtitle {
+                color: #666;
+                margin: 0;
+                font-size: 14px;
+            }
+            .week {
+                margin-bottom: 25px;
+                break-inside: avoid;
+            }
+            .week-title {
+                background: #f5f5f5;
+                border-left: 4px solid #1976d2;
+                padding: 10px 15px;
+                margin-bottom: 10px;
+                font-weight: bold;
+                font-size: 16px;
+            }
+            .pairs-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+            .pairs-list li {
+                padding: 8px 15px;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                align-items: center;
+            }
+            .pairs-list li:before {
+                content: "🔹";
+                margin-right: 10px;
+            }
+            .pairs-list li:last-child {
+                border-bottom: none;
+            }
+            .footer {
+                margin-top: 40px;
+                text-align: center;
+                font-size: 12px;
+                color: #666;
+                border-top: 1px solid #eee;
+                padding-top: 15px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>📅 Cronograma de Duplas</h1>
+            <p class="subtitle">Gerado em ${currentDate} | Total: ${weeksData.length} semanas</p>
+        </div>
+        
+        <div class="content">`;
+
+    weeksData.forEach((week, index) => {
+        html += `
+            <div class="week">
+                <div class="week-title">Semana ${index + 1}: ${week.label}</div>
+                <ul class="pairs-list">`;
+        
+        week.pairs.forEach(([p1, p2]) => {
+            html += `<li>${p1} e ${p2}</li>`;
+        });
+        
+        html += `
+                </ul>
+            </div>`;
+    });
+
+    html += `
+        </div>
+        
+        <div class="footer">
+            <p>Gerado pelo Sistema de Geração de Duplas</p>
+        </div>
+    </body>
+    </html>`;
+
+    return html;
+}
+
+/**
+ * Clears all results from the results container.
+ */
+function clearResults() {
+    // Add confirmation dialog
+    if (confirm('Tem certeza de que deseja limpar todos os resultados?')) {
+        const resultDiv = document.getElementById('result-div');
+        if (resultDiv) {
+            resultDiv.innerHTML = '';
+            M.toast({ html: 'Resultados limpos!' });
+        }
+    }
 }
 
 /**

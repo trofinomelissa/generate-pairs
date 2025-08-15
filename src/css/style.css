@@ -203,3 +203,69 @@ body.dark-mode .datepicker-done {
     top: -50px; /* Ajusta a posição vertical */
     right: 10px;
 }
+
+/* Results header styles */
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 16px 20px;
+    background: var(--container-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+.results-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.results-actions .btn,
+.results-actions .btn-flat {
+    margin: 0;
+    font-size: 0.9rem;
+    padding: 0 16px;
+    height: 36px;
+    line-height: 36px;
+}
+
+.results-actions .btn-flat {
+    color: var(--primary) !important;
+}
+
+.results-actions .btn-flat.red-text {
+    color: #f44336 !important;
+}
+
+body.dark-mode .results-actions .btn-flat.red-text {
+    color: #ff6b6b !important;
+}
+
+.results-content {
+    margin-top: 0;
+}
+
+/* Responsive adjustments for the results header */
+@media (max-width: 768px) {
+    .results-header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+    
+    .results-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .results-actions .btn,
+    .results-actions .btn-flat {
+        font-size: 0.8rem;
+        padding: 0 12px;
+        height: 32px;
+        line-height: 32px;
+    }
+}
