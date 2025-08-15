@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize Materialize date pickers
     var datepickers = document.querySelectorAll('.datepicker');
     M.Datepicker.init(datepickers, {
-        format: 'yyyy-mm-dd',
+        format: 'dd/mm/yyyy',
         autoClose: true,
         i18n: {
             cancel: 'Cancelar',
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var mm = String(today.getMonth() + 1).padStart(2, '0');
     var dd = String(today.getDate()).padStart(2, '0');
     var startDateInput = document.getElementById('start-date-input');
-    startDateInput.value = `${yyyy}-${mm}-${dd}`;
+    startDateInput.value = `${dd}/${mm}/${yyyy}`;
     
     // Force Materialize label update for pre-filled fields
     M.updateTextFields();

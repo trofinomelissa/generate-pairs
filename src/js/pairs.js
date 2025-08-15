@@ -166,7 +166,11 @@ function getFormData() {
 
     // Calculate the correct start date based on the chosen day of the week
     const startDate = calculateCorrectStartDate(startDateStr, selectedDayOfWeek);
-    startDateInput.value = startDate.toISOString().slice(0, 10); // Update the UI field
+    // Update the UI field with Brazilian format
+    const dd = String(startDate.getDate()).padStart(2, '0');
+    const mm = String(startDate.getMonth() + 1).padStart(2, '0');
+    const yyyy = startDate.getFullYear();
+    startDateInput.value = `${dd}/${mm}/${yyyy}`;
 
     const numWeeksInput = document.getElementById('weeks-input');
     let numWeeks = parseInt(numWeeksInput.value, 10);
