@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Duplas</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Gerador de Duplas</h1>
+        <p>Monte duplas para qualquer grupo de pessoas, com regras automáticas para listas ímpares e até 40 semanas.</p>
+        
+        <div class="input-field" id="manual-input-container">
+            <textarea id="name-list-textarea" class="materialize-textarea tooltipped" placeholder="Um por linha" data-tooltip="Digite um nome por linha. O sistema aceita número ímpar de pessoas e repete alguém para não deixar ninguém sozinho."></textarea>
+            <label for="name-list-textarea">Lista de nomes</label>
+        </div>
+        
+        <div class="input-field" id="start-date-container">
+            <input type="date" id="start-date-input" class="validate tooltipped" data-tooltip="Escolha a data de início da primeira semana. Se não preencher, será usada a próxima semana automaticamente." />
+            <label for="start-date-input">Data de início da primeira semana</label>
+        </div>
+        
+        <div class="input-field">
+            <label for="weekday-select" class="active">Dia da semana de início</label>
+            <select id="weekday-select" class="browser-default tooltipped" data-tooltip="Escolha o dia da semana de início das semanas. O sistema ajusta automaticamente para a próxima ocorrência desse dia.">
+                <option value="1">Segunda-feira</option>
+                <option value="2">Terça-feira</option>
+                <option value="3" selected>Quarta-feira</option>
+                <option value="4">Quinta-feira</option>
+                <option value="5">Sexta-feira</option>
+                <option value="6">Sábado</option>
+                <option value="0">Domingo</option>
+            </select>
+        </div>
+        
+        <div class="input-field">
+            <input type="number" id="weeks-input" min="1" class="validate tooltipped" placeholder="Ex: 10" data-tooltip="Defina quantas semanas deseja gerar (máximo: 40). O sistema repete as duplas se necessário." value="10" />
+            <label for="weeks-input">Quantidade de semanas</label>
+        </div>
+        
+        <button class="btn waves-effect waves-light tooltipped" onclick="loadPairs()" data-tooltip="Clique para gerar as duplas. O sistema aceita número ímpar de pessoas e até 40 semanas.">Gerar Duplas</button>
+        <div id="result-div" style="margin-top:32px; max-height:400px; overflow-y:auto;"></div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/pairs.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+</html>
