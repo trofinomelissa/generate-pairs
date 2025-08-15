@@ -175,7 +175,7 @@ function renderWeeks(weeksData, container) {
         weekLabel.textContent = week.label;
 
         const copyButton = document.createElement('button');
-        copyButton.className = 'btn-floating btn-small waves-effect waves-light tooltipped';
+        copyButton.className = 'btn-floating btn-small waves-effect waves-light tooltipped blue';
         copyButton.setAttribute('data-position', 'top');
         copyButton.setAttribute('data-tooltip', 'Copiar rodada');
         copyButton.innerHTML = '<i class="material-icons">content_copy</i>';

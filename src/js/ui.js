@@ -1,4 +1,20 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Theme: dark/light toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    function setTheme(dark) {
+        document.body.classList.toggle('dark-mode', dark);
+        themeIcon.textContent = dark ? 'light_mode' : 'dark_mode';
+    }
+    // Load preference
+    let dark = localStorage.getItem('theme') === 'dark' || (localStorage.getItem('theme') === null && prefersDark);
+    setTheme(dark);
+    themeToggle.addEventListener('click', function() {
+        dark = !document.body.classList.contains('dark-mode');
+        setTheme(dark);
+        localStorage.setItem('theme', dark ? 'dark' : 'light');
+    });
     // Initialize tooltips
     var tooltips = document.querySelectorAll('.tooltipped');
     M.Tooltip.init(tooltips);

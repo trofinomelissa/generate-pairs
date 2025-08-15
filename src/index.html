@@ -10,7 +10,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>Gerador de Duplas</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>Gerador de Duplas</h1>
+            <button id="theme-toggle" class="btn-flat waves-effect" title="Alternar tema" style="font-size:1.5rem;">
+                <span class="material-icons" id="theme-icon">dark_mode</span>
+            </button>
+        </div>
         <p>Monte duplas para qualquer grupo de pessoas, com regras automáticas para listas ímpares e até 40 semanas.</p>
         
         <div class="input-field" id="manual-input-container">
@@ -19,7 +24,7 @@
         </div>
         
         <div class="input-field" id="start-date-container">
-            <input type="date" id="start-date-input" class="validate tooltipped" data-tooltip="Escolha a data de início da primeira semana. Se não preencher, será usada a próxima semana automaticamente." />
+            <input type="text" id="start-date-input" class="datepicker tooltipped" data-tooltip="Escolha a data de início da primeira semana. Se não preencher, será usada a próxima semana automaticamente." />
             <label for="start-date-input">Data de início da primeira semana</label>
         </div>
         
