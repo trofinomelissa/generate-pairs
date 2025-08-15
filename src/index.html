@@ -19,18 +19,18 @@
         <p>Monte duplas para qualquer grupo de pessoas, com regras automáticas para listas ímpares e até 40 semanas.</p>
         
         <div class="input-field" id="manual-input-container">
-            <textarea id="name-list-textarea" class="materialize-textarea tooltipped" placeholder="Um por linha" data-tooltip="Digite um nome por linha. O sistema aceita número ímpar de pessoas e repete alguém para não deixar ninguém sozinho."></textarea>
+            <textarea id="name-list-textarea" class="materialize-textarea tooltipped" data-tooltip="Um nome por linha. Aceita número ímpar."></textarea>
             <label for="name-list-textarea">Lista de nomes</label>
         </div>
         
         <div class="input-field" id="start-date-container">
-            <input type="text" id="start-date-input" class="datepicker tooltipped" data-tooltip="Escolha a data de início da primeira semana. Se não preencher, será usada a próxima semana automaticamente." />
+            <input type="text" id="start-date-input" class="datepicker tooltipped" data-tooltip="Data de início." />
             <label for="start-date-input">Data de início da primeira semana</label>
         </div>
         
         <div class="input-field">
             <label for="weekday-select" class="active">Dia da semana de início</label>
-            <select id="weekday-select" class="browser-default tooltipped" data-tooltip="Escolha o dia da semana de início das semanas. O sistema ajusta automaticamente para a próxima ocorrência desse dia.">
+            <select id="weekday-select" class="browser-default tooltipped" data-tooltip="Dia da semana para as rodadas.">
                 <option value="1">Segunda-feira</option>
                 <option value="2">Terça-feira</option>
                 <option value="3" selected>Quarta-feira</option>
@@ -42,7 +42,7 @@
         </div>
         
         <div class="input-field">
-            <input type="number" id="weeks-input" min="1" class="validate tooltipped" placeholder="Ex: 10" data-tooltip="Defina quantas semanas deseja gerar (máximo: 40). O sistema repete as duplas se necessário." value="10" />
+            <input type="number" id="weeks-input" min="1" class="validate tooltipped" placeholder="10" data-tooltip="Máximo: 40 semanas." value="10" />
             <label for="weeks-input">Quantidade de semanas</label>
         </div>
         
