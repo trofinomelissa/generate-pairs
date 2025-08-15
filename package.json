@@ -10,7 +10,14 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "commitizen": "^4.3.1",
+    "cz-gitmoji": "^0.0.7",
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-gitmoji"
+    }
   }
 }
