@@ -1,4 +1,4 @@
-const { formatDateBR } = require('../src/js/utils');
+const { formatDateBR, calculateCorrectStartDate } = require('../src/js/utils');
 
 describe('formatDateBR', () => {
     test('should format a standard date correctly', () => {
@@ -32,5 +32,79 @@ describe('formatDateBR', () => {
 
         // Assert
         expect(formattedDate).toBe('31/12');
+    });
+});
+
+describe('calculateCorrectStartDate', () => {
+    afterEach(() => {
+        // Restore Date if it was mocked
+        if (global._originalDate) {
+            global.Date = global._originalDate;
+            delete global._originalDate;
+        }
+    });
+
+    test('should return the same date if it is already the selected day (with startDateStr)', () => {
+        // Arrange
+        const date = '2025-08-14'; // Thursday
+        const selectedDay = 4; // 0=Sunday, 4=Thursday
+
+        // Act
+        const result = calculateCorrectStartDate(date, selectedDay);
+
+        // Assert
+        expect(result.toISOString().slice(0, 10)).toBe('2025-08-14');
+    });
+
+    test('should return the next occurrence if today is not the selected day', () => {
+        // Arrange
+        const date = '2025-08-14'; // Thursday
+        const selectedDay = 1; // Monday
+
+        // Act
+        const result = calculateCorrectStartDate(date, selectedDay);
+
+        // Assert
+        expect(result.toISOString().slice(0, 10)).toBe('2025-08-18'); // Next Monday
+    });
+
+    test('should skip to next week if no date provided and today is the selected day', () => {
+        // Arrange
+        global._originalDate = global.Date;
+        global.Date = class extends global._originalDate {
+            constructor(...args) {
+                if (args.length === 0) {
+                    return new global._originalDate('2025-08-17T00:00:00'); // Sunday
+                }
+                return new global._originalDate(...args);
+            }
+        };
+        const selectedDay = 0; // Sunday
+
+        // Act
+        const result = calculateCorrectStartDate('', selectedDay);
+
+        // Assert
+        expect(result.toISOString().slice(0, 10)).toBe('2025-08-24'); // Next Sunday
+    });
+
+    test('should return next occurrence if no date provided and today is not the selected day', () => {
+        // Arrange
+        global._originalDate = global.Date;
+        global.Date = class extends global._originalDate {
+            constructor(...args) {
+                if (args.length === 0) {
+                    return new global._originalDate('2025-08-14T00:00:00'); // Thursday
+                }
+                return new global._originalDate(...args);
+            }
+        };
+        const selectedDay = 1; // Monday
+
+        // Act
+        const result = calculateCorrectStartDate('', selectedDay);
+
+        // Assert
+        expect(result.toISOString().slice(0, 10)).toBe('2025-08-18'); // Next Monday
     });
 });
