@@ -1,3 +1,54 @@
+const { generateWeeksData } = require('../src/js/pairs');
+
+describe('generateWeeksData', () => {
+    test('should generate correct week data for a single round', () => {
+         // Arrange
+         const rounds = [[['a', 'b']]];
+         // Using UTC date to avoid timezone issues during tests
+         const startDate = new Date('2025-08-14T00:00:00');
+
+         // Act
+         const weeksData = generateWeeksData(rounds, startDate);
+
+         // Assert
+         expect(weeksData.length).toBe(1);
+         expect(weeksData[0].weekNumber).toBe(1);
+         expect(weeksData[0].label).toBe('14/08 - 20/08');
+         expect(weeksData[0].pairs).toEqual([['a', 'b']]);
+     });
+
+    test('should generate correct data for multiple weeks', () => {
+         // Arrange
+         const rounds = [[['a', 'b']], [['c', 'd']]];
+         const startDate = new Date('2025-08-14T00:00:00');
+
+         // Act
+         const weeksData = generateWeeksData(rounds, startDate);
+
+         // Assert
+         expect(weeksData.length).toBe(2);
+         
+         expect(weeksData[0].weekNumber).toBe(1);
+         expect(weeksData[0].label).toBe('14/08 - 20/08');
+         expect(weeksData[0].pairs).toEqual([['a', 'b']]);
+
+         expect(weeksData[1].weekNumber).toBe(2);
+         expect(weeksData[1].label).toBe('21/08 - 27/08');
+         expect(weeksData[1].pairs).toEqual([['c', 'd']]);
+     });
+
+    test('should return an empty array if no rounds are provided', () => {
+         // Arrange
+         const rounds = [];
+         const startDate = new Date('2025-08-14T00:00:00');
+
+         // Act
+         const weeksData = generateWeeksData(rounds, startDate);
+
+         // Assert
+         expect(weeksData.length).toBe(0);
+     });
+});
 const { formatDateBR, calculateCorrectStartDate } = require('../src/js/utils');
 
 describe('formatDateBR', () => {

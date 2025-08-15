@@ -20,7 +20,7 @@ function formatDateBR(date) {
 function calculateCorrectStartDate(startDateStr, selectedDayOfWeek) {
     let baseDate;
     if (startDateStr) {
-        // Parse YYYY-MM-DD as local date
+    // Parse YYYY-MM-DD as a local date
         const [year, month, day] = startDateStr.split('-').map(Number);
         baseDate = new Date(year, month - 1, day);
     } else {
@@ -29,13 +29,13 @@ function calculateCorrectStartDate(startDateStr, selectedDayOfWeek) {
     const currentDay = baseDate.getDay();
     let daysUntilNext = (selectedDayOfWeek - currentDay + 7) % 7;
     if (!startDateStr && daysUntilNext === 0) {
-        daysUntilNext = 7; // If the date was not provided and today is the day, skip to the next week
+    daysUntilNext = 7; // If the date was not provided and today is the day, skip to the next week
     }
     baseDate.setDate(baseDate.getDate() + daysUntilNext);
     return baseDate;
 }
 
-// Add exports for the test environment (Node.js)
+// Export functions for the test environment (Node.js)
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         formatDateBR,

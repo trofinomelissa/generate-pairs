@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.classList.toggle('dark-mode', dark);
         themeIcon.textContent = dark ? 'light_mode' : 'dark_mode';
     }
-    // Load preference
+    // Load theme preference from localStorage or system
     let dark = localStorage.getItem('theme') === 'dark' || (localStorage.getItem('theme') === null && prefersDark);
     setTheme(dark);
     themeToggle.addEventListener('click', function() {
@@ -15,15 +15,15 @@ document.addEventListener('DOMContentLoaded', function() {
         setTheme(dark);
         localStorage.setItem('theme', dark ? 'dark' : 'light');
     });
-    // Initialize tooltips
+    // Initialize Materialize tooltips
     var tooltips = document.querySelectorAll('.tooltipped');
     M.Tooltip.init(tooltips);
 
-    // Initialize selects
+    // Initialize Materialize selects
     var selects = document.querySelectorAll('select');
     M.FormSelect.init(selects);
 
-    // Initialize date pickers
+    // Initialize Materialize date pickers
     var datepickers = document.querySelectorAll('.datepicker');
     M.Datepicker.init(datepickers, {
         format: 'yyyy-mm-dd',
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Fill start date with today
+    // Fill the start date input with today's date
     var today = new Date();
     var yyyy = today.getFullYear();
     var mm = String(today.getMonth() + 1).padStart(2, '0');

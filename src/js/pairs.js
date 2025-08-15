@@ -5,11 +5,131 @@ if (typeof require !== 'undefined') {
 }
 
 /**
+ * Generates pair rounds avoiding repeated pairs and rotates who repeats in case of odd lists.
+ * @param {Array<string>} participants List of participants
+ * @param {number} rounds Number of rounds
+ * @returns {Array<Array<Array<string>>>} Array of rounds, each round is an array of pairs
+ */
+function generatePairRounds(participants, rounds) {
+    // Copy the list to avoid mutating the original
+    const people = [...participants];
+    const n = people.length;
+    const allPairs = new Set(); // To avoid repeated pairs
+    const coringaQueue = [];
+    for (let i = 0; i < n; i++) coringaQueue.push(people[i]);
+    const result = [];
+
+    // Helper to generate an ordered pair key (to avoid repeated pairs)
+    function pairKey(a, b) {
+        return a < b ? `${a}|${b}` : `${b}|${a}`;
+    }
+
+    for (let round = 0; round < rounds; round++) {
+        // Deterministic shuffling: rotate the list each round
+        const rotated = people.slice(round % n).concat(people.slice(0, round % n));
+        let roundPairs = [];
+        let used = new Set();
+        let coringa = null;
+
+        if (n % 2 === 1) {
+            // Select the joker for this round (rotating)
+            coringa = coringaQueue.shift();
+            coringaQueue.push(coringa);
+        }
+
+        // Build pairs for this round
+        if (n % 2 === 1 && coringa) {
+            // Joker makes two pairs
+            let coringaPairs = [];
+            // Try to create new (unseen) pairs first
+            for (let j = 0; j < n && coringaPairs.length < 2; j++) {
+                if (rotated[j] === coringa || used.has(rotated[j])) continue;
+                const key = pairKey(coringa, rotated[j]);
+                if (!allPairs.has(key)) {
+                    coringaPairs.push(rotated[j]);
+                    used.add(rotated[j]);
+                }
+            }
+            // If not enough new pairs, complete with any available
+            for (let j = 0; j < n && coringaPairs.length < 2; j++) {
+                if (rotated[j] === coringa || used.has(rotated[j])) continue;
+                if (!coringaPairs.includes(rotated[j])) {
+                    coringaPairs.push(rotated[j]);
+                    used.add(rotated[j]);
+                }
+            }
+            // Ensure the joker always has two pairs
+            if (coringaPairs.length < 2) {
+                for (let j = 0; j < n && coringaPairs.length < 2; j++) {
+                    if (rotated[j] === coringa) continue;
+                    if (!coringaPairs.includes(rotated[j])) {
+                        coringaPairs.push(rotated[j]);
+                        used.add(rotated[j]);
+                    }
+                }
+            }
+            // Add joker's pairs to the round
+            for (const p of coringaPairs) {
+                roundPairs.push([coringa, p]);
+                allPairs.add(pairKey(coringa, p));
+            }
+            used.add(coringa);
+        }
+
+        // Build the remaining pairs
+        for (let i = 0; i < n; i++) {
+            if (used.has(rotated[i])) continue;
+            // Look for a new (unseen) pair
+            let found = false;
+            for (let j = i + 1; j < n; j++) {
+                if (used.has(rotated[j])) continue;
+                const key = pairKey(rotated[i], rotated[j]);
+                if (!allPairs.has(key)) {
+                    roundPairs.push([rotated[i], rotated[j]]);
+                    allPairs.add(key);
+                    used.add(rotated[i]);
+                    used.add(rotated[j]);
+                    found = true;
+                    break;
+                }
+            }
+            // If no new pair found, use any available
+            if (!found) {
+                for (let j = i + 1; j < n; j++) {
+                    if (used.has(rotated[j])) continue;
+                    roundPairs.push([rotated[i], rotated[j]]);
+                    allPairs.add(pairKey(rotated[i], rotated[j]));
+                    used.add(rotated[i]);
+                    used.add(rotated[j]);
+                    break;
+                }
+            }
+        }
+
+        // If someone is still without a pair (should only happen with odd lists)
+        const notUsed = people.filter(p => !used.has(p));
+        while (notUsed.length > 0) {
+            // Force extra pairs to ensure everyone participates
+            const a = notUsed.shift();
+            const b = notUsed.shift() || people.find(p => p !== a);
+            roundPairs.push([a, b]);
+            used.add(a);
+            used.add(b);
+        }
+
+        result.push(roundPairs);
+    }
+    return result;
+}
+
+/**
  * Main entry point. Collects UI data, generates pairs, and displays them.
  */
 function loadPairs() {
+    // Ensure the element exists
     const resultDiv = document.getElementById('result-div');
-    resultDiv.innerHTML = ''; // Clear previous results
+    if (!resultDiv) return;
+    resultDiv.innerHTML = '';
 
     // 1. Collect and validate form data
     const { people, startDate, numWeeks, error } = getFormData();
@@ -58,60 +178,6 @@ function getFormData() {
 }
 
 /**
- * Generates pair rounds using a round-robin rotation algorithm.
- * @param {string[]} people - The list of people.
- * @param {number} totalWeeks - The number of weeks to generate.
- * @returns {Array<Array<[string, string]>>} An array of rounds, where each round has a list of pairs.
- */
-function generatePairRounds(people, totalWeeks) {
-    let list = [...people];
-    const rounds = [];
-    const maxWeeks = 40;
-    const weeksToGenerate = Math.min(totalWeeks, maxWeeks);
-
-    // If odd, add a "joker" for the algorithm to work.
-    // The joker will be handled later to repeat someone.
-    const isOdd = list.length % 2 !== 0;
-    if (isOdd) {
-        list.push(null); // Add the joker
-    }
-
-    for (let week = 0; week < weeksToGenerate; week++) {
-        const pairsOfWeek = [];
-        for (let i = 0; i < list.length / 2; i++) {
-            const p1 = list[i];
-            const p2 = list[list.length - 1 - i];
-            if (p1 && p2) { // Ensure the pair does not have the joker
-                pairsOfWeek.push([p1, p2]);
-            } else if (isOdd) {
-                // If odd, one of the two is the joker. The remaining person will be paired with someone.
-                const singlePerson = p1 || p2;
-                
-                // Defines who the single person will be paired with.
-                // The rule is to repeat the first person on the list, unless the single person IS the first one.
-                let repeatedPartner = list[0];
-                if (singlePerson === repeatedPartner) {
-                    // If the single person is the first on the list, they cannot be paired with themselves.
-                    // In this case, they will be paired with the second person on the list.
-                    repeatedPartner = list[1];
-                }
-                
-                pairsOfWeek.push([singlePerson, repeatedPartner]);
-            }
-        }
-        rounds.push(pairsOfWeek);
-
-        // Rotate the list for the next week (keeping the first one fixed)
-        const first = list.shift();
-        const last = list.pop();
-        list.unshift(last);
-        list.unshift(first);
-    }
-    // Returns the rounds and the list (which may have the joker).
-    return rounds;
-}
-
-/**
  * Generates the data for each week, including dates and pairs.
  * @param {Array<Array<[string, string]>>} rounds - The generated rounds.
  * @param {Date} startDate - The start date of the first week.
@@ -146,7 +212,11 @@ if (typeof module !== 'undefined' && module.exports) {
         generatePairRounds,
         generateWeeksData // Add this line for testing
     };
-    generateWeeksData // Add this line for testing
+}
+
+// Make loadPairs global for HTML
+if (typeof window !== 'undefined') {
+    window.loadPairs = loadPairs;
 }
 
 /**
@@ -170,7 +240,7 @@ function renderWeeks(weeksData, container) {
 
         const weekHeader = document.createElement('div');
         weekHeader.className = 'round-header';
-        
+
         const weekLabel = document.createElement('h3');
         weekLabel.textContent = week.label;
 
@@ -183,7 +253,7 @@ function renderWeeks(weeksData, container) {
 
         weekHeader.appendChild(weekLabel);
         weekHeader.appendChild(copyButton);
-        
+
         weekDiv.appendChild(weekHeader);
 
         const pairsList = document.createElement('ul');
@@ -208,7 +278,7 @@ function renderWeeks(weeksData, container) {
 function copyWeekToClipboard(weekData) {
     // Format the title in bold and add a blank line for better readability
     let textToCopy = `*${weekData.label}*\n\n`;
-    
+
     // Add each pair with an emoji as a bullet point
     weekData.pairs.forEach(([p1, p2]) => {
         textToCopy += `🔹 ${p1} e ${p2}\n`;
