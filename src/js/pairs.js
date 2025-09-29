@@ -11,114 +11,53 @@ if (typeof require !== 'undefined') {
  * @returns {Array<Array<Array<string>>>} Array of rounds, each round is an array of pairs
  */
 function generatePairRounds(participants, rounds) {
-    // Copy the list to avoid mutating the original
     const people = [...participants];
-    const n = people.length;
-    const allPairs = new Set(); // To avoid repeated pairs
-    const coringaQueue = [];
-    for (let i = 0; i < n; i++) coringaQueue.push(people[i]);
+    let n = people.length;
     const result = [];
+    const isOdd = n % 2 !== 0;
 
-    // Helper to generate an ordered pair key (to avoid repeated pairs)
-    function pairKey(a, b) {
-        return a < b ? `${a}|${b}` : `${b}|${a}`;
+    if (isOdd) {
+        people.push('placeholder');
+        n++;
     }
 
     for (let round = 0; round < rounds; round++) {
-        // Deterministic shuffling: rotate the list each round
-        const rotated = people.slice(round % n).concat(people.slice(0, round % n));
-        let roundPairs = [];
-        let used = new Set();
-        let coringa = null;
+        const roundPairs = [];
+        let personLeftOut = null;
 
-        if (n % 2 === 1) {
-            // Select the joker for this round (rotating)
-            coringa = coringaQueue.shift();
-            coringaQueue.push(coringa);
+        for (let i = 0; i < n / 2; i++) {
+            const p1 = people[i];
+            const p2 = people[n - 1 - i];
+
+            if (p1 === 'placeholder') {
+                personLeftOut = p2;
+                continue;
+            }
+            if (p2 === 'placeholder') {
+                personLeftOut = p1;
+                continue;
+            }
+            roundPairs.push([p1, p2]);
         }
 
-        // Build pairs for this round
-        if (n % 2 === 1 && coringa) {
-            // Joker makes two pairs
-            let coringaPairs = [];
-            // Try to create new (unseen) pairs first
-            for (let j = 0; j < n && coringaPairs.length < 2; j++) {
-                if (rotated[j] === coringa || used.has(rotated[j])) continue;
-                const key = pairKey(coringa, rotated[j]);
-                if (!allPairs.has(key)) {
-                    coringaPairs.push(rotated[j]);
-                    used.add(rotated[j]);
-                }
+        if (isOdd && personLeftOut) {
+            // In odd lists, the person left out forms a pair with the first person of the first pair
+            if (roundPairs.length > 0) {
+                roundPairs.push([personLeftOut, roundPairs[0][0]]);
+            } else {
+                // This case should not happen in a real scenario with participants
             }
-            // If not enough new pairs, complete with any available
-            for (let j = 0; j < n && coringaPairs.length < 2; j++) {
-                if (rotated[j] === coringa || used.has(rotated[j])) continue;
-                if (!coringaPairs.includes(rotated[j])) {
-                    coringaPairs.push(rotated[j]);
-                    used.add(rotated[j]);
-                }
-            }
-            // Ensure the joker always has two pairs
-            if (coringaPairs.length < 2) {
-                for (let j = 0; j < n && coringaPairs.length < 2; j++) {
-                    if (rotated[j] === coringa) continue;
-                    if (!coringaPairs.includes(rotated[j])) {
-                        coringaPairs.push(rotated[j]);
-                        used.add(rotated[j]);
-                    }
-                }
-            }
-            // Add joker's pairs to the round
-            for (const p of coringaPairs) {
-                roundPairs.push([coringa, p]);
-                allPairs.add(pairKey(coringa, p));
-            }
-            used.add(coringa);
-        }
-
-        // Build the remaining pairs
-        for (let i = 0; i < n; i++) {
-            if (used.has(rotated[i])) continue;
-            // Look for a new (unseen) pair
-            let found = false;
-            for (let j = i + 1; j < n; j++) {
-                if (used.has(rotated[j])) continue;
-                const key = pairKey(rotated[i], rotated[j]);
-                if (!allPairs.has(key)) {
-                    roundPairs.push([rotated[i], rotated[j]]);
-                    allPairs.add(key);
-                    used.add(rotated[i]);
-                    used.add(rotated[j]);
-                    found = true;
-                    break;
-                }
-            }
-            // If no new pair found, use any available
-            if (!found) {
-                for (let j = i + 1; j < n; j++) {
-                    if (used.has(rotated[j])) continue;
-                    roundPairs.push([rotated[i], rotated[j]]);
-                    allPairs.add(pairKey(rotated[i], rotated[j]));
-                    used.add(rotated[i]);
-                    used.add(rotated[j]);
-                    break;
-                }
-            }
-        }
-
-        // If someone is still without a pair (should only happen with odd lists)
-        const notUsed = people.filter(p => !used.has(p));
-        while (notUsed.length > 0) {
-            // Force extra pairs to ensure everyone participates
-            const a = notUsed.shift();
-            const b = notUsed.shift() || people.find(p => p !== a);
-            roundPairs.push([a, b]);
-            used.add(a);
-            used.add(b);
         }
 
         result.push(roundPairs);
+
+        // Rotate for next round, keeping the first element fixed
+        const first = people.shift();
+        const last = people.pop();
+        people.unshift(last);
+        people.unshift(first);
     }
+
     return result;
 }
 
