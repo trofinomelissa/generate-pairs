@@ -40,13 +40,9 @@ function generatePairRounds(participants, rounds) {
             roundPairs.push([p1, p2]);
         }
 
-        if (isOdd && personLeftOut) {
-            // In odd lists, the person left out forms a pair with the first person of the first pair
-            if (roundPairs.length > 0) {
-                roundPairs.push([personLeftOut, roundPairs[0][0]]);
-            } else {
-                // This case should not happen in a real scenario with participants
-            }
+        if (isOdd && personLeftOut && roundPairs.length > 0) {
+            // In odd lists, if there is at least one valid pair, the person left out forms a pair with the first person of the first pair
+            roundPairs.push([personLeftOut, roundPairs[0][0]]);
         }
 
         result.push(roundPairs);
